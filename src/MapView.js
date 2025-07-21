@@ -81,7 +81,6 @@ const MapView = () => {
     setDraftPin(null);
   };
 
-  // Delete a pin by index
   const handleDelete = (index) => {
     const filtered = pins.filter((_, i) => i !== index);
     localStorage.setItem("pins", JSON.stringify(filtered));
@@ -89,7 +88,6 @@ const MapView = () => {
     setFocusedPin(null);
   };
 
-  // Clear all saved pins
   const handleClearPins = () => {
     if (window.confirm("Are you sure you want to remove all pins?")) {
       localStorage.removeItem("pins");
@@ -98,7 +96,6 @@ const MapView = () => {
     }
   };
 
-  // Save an edited remark
   const handleSaveEdit = (index) => {
     const updated = [...pins];
     updated[index].remark = editedRemark;
@@ -109,7 +106,6 @@ const MapView = () => {
 
   return (
     <div style={{ display: "flex" }}>
-      {/* Sidebar for pin list */}
       <aside
         style={{
           width: "300px",
@@ -219,7 +215,6 @@ const MapView = () => {
         </ul>
       </aside>
 
-      {/* Map View */}
       <main style={{ flex: 1 }}>
         <MapContainer
           center={[20.5937, 78.9629]}
