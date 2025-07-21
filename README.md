@@ -48,6 +48,7 @@ This is used to avoid CORS issues when calling the Nominatim API.
 - LocalStorage (for data persistence)
 
 ## Project Structure
+```
 .
 ├── public/
 ├── src/
@@ -57,6 +58,7 @@ This is used to avoid CORS issues when calling the Nominatim API.
 ├── proxy-server.js
 ├── package.json
 └── README.md
+```
 
 ## Acknowledgements
 Leaflet — Open-source JavaScript library for mobile-friendly maps.
