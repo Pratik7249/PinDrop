@@ -10,7 +10,6 @@ import {
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-// Fix marker icon issue
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl:
@@ -21,104 +20,100 @@ L.Icon.Default.mergeOptions({
     "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
 });
 
-// Handles map clicks to set new marker
-const MapClickHandler = ({ onMapClick }) => {
+const MapClickHandler = ({ onClick }) => {
   useMapEvents({
-    click: (e) => {
-      onMapClick(e.latlng);
-    },
+    click: (e) => onClick(e.latlng),
   });
   return null;
 };
 
-// Fly to selected pin
-const FlyToPin = ({ pin }) => {
+const AnimateToPin = ({ pin }) => {
   const map = useMap();
   useEffect(() => {
-    if (pin) {
-      map.flyTo([pin.lat, pin.lng], 14);
-    }
+    if (pin) map.flyTo([pin.lat, pin.lng], 14);
   }, [pin, map]);
   return null;
 };
 
-// Fetch address from proxy server
-const fetchAddress = async (lat, lng) => {
+const getAddressFromCoordinates = async (lat, lon) => {
   try {
-    const res = await fetch(
-      `http://localhost:4000/reverse-geocode?lat=${lat}&lon=${lng}`
+    const response = await fetch(
+      `http://localhost:4000/reverse-geocode?lat=${lat}&lon=${lon}`
     );
-    const data = await res.json();
+    const data = await response.json();
     return data.display_name || "Address not found";
-  } catch (error) {
-    console.error("Address fetch failed:", error);
-    return "Address fetch error";
+  } catch (err) {
+    console.error("Failed to fetch address:", err);
+    return "Error fetching address";
   }
 };
 
 const MapView = () => {
-  const [newPin, setNewPin] = useState(null);
-  const [remark, setRemark] = useState("");
-  const [savedPins, setSavedPins] = useState([]);
-  const [selectedPin, setSelectedPin] = useState(null);
-  const [editIndex, setEditIndex] = useState(null);
-  const [editRemark, setEditRemark] = useState("");
+  const [draftPin, setDraftPin] = useState(null);
+  const [remarkInput, setRemarkInput] = useState("");
+  const [pins, setPins] = useState([]);
+  const [focusedPin, setFocusedPin] = useState(null);
+  const [editModeIndex, setEditModeIndex] = useState(null);
+  const [editedRemark, setEditedRemark] = useState("");
 
   useEffect(() => {
-    const storedPins = JSON.parse(localStorage.getItem("pins")) || [];
-    setSavedPins(storedPins);
+    const stored = JSON.parse(localStorage.getItem("pins")) || [];
+    setPins(stored);
   }, []);
 
   const handleMapClick = (latlng) => {
-    setNewPin(latlng);
-    setRemark("");
+    setDraftPin(latlng);
+    setRemarkInput("");
   };
 
-  const handleSubmit = async (e) => {
+  const handleSavePin = async (e) => {
     e.preventDefault();
-    const address = await fetchAddress(newPin.lat, newPin.lng);
-    const newPinData = {
-      lat: newPin.lat,
-      lng: newPin.lng,
-      remark: remark,
-      address: address,
+    const address = await getAddressFromCoordinates(draftPin.lat, draftPin.lng);
+    const newEntry = {
+      lat: draftPin.lat,
+      lng: draftPin.lng,
+      remark: remarkInput,
+      address,
     };
-    const updatedPins = [...savedPins, newPinData];
-    localStorage.setItem("pins", JSON.stringify(updatedPins));
-    setSavedPins(updatedPins);
-    setNewPin(null);
+    const updated = [...pins, newEntry];
+    localStorage.setItem("pins", JSON.stringify(updated));
+    setPins(updated);
+    setDraftPin(null);
   };
 
-  const handleDeletePin = (indexToDelete) => {
-    const updatedPins = savedPins.filter((_, i) => i !== indexToDelete);
-    localStorage.setItem("pins", JSON.stringify(updatedPins));
-    setSavedPins(updatedPins);
-    setSelectedPin(null);
+  // Delete a pin by index
+  const handleDelete = (index) => {
+    const filtered = pins.filter((_, i) => i !== index);
+    localStorage.setItem("pins", JSON.stringify(filtered));
+    setPins(filtered);
+    setFocusedPin(null);
   };
 
-  const handleClearAll = () => {
-    if (window.confirm("Are you sure you want to delete all pins?")) {
+  // Clear all saved pins
+  const handleClearPins = () => {
+    if (window.confirm("Are you sure you want to remove all pins?")) {
       localStorage.removeItem("pins");
-      setSavedPins([]);
-      setSelectedPin(null);
+      setPins([]);
+      setFocusedPin(null);
     }
   };
 
+  // Save an edited remark
   const handleSaveEdit = (index) => {
-    const updatedPins = [...savedPins];
-    updatedPins[index].remark = editRemark;
-    localStorage.setItem("pins", JSON.stringify(updatedPins));
-    setSavedPins(updatedPins);
-    setEditIndex(null);
+    const updated = [...pins];
+    updated[index].remark = editedRemark;
+    localStorage.setItem("pins", JSON.stringify(updated));
+    setPins(updated);
+    setEditModeIndex(null);
   };
 
   return (
     <div style={{ display: "flex" }}>
-      {/* Sidebar */}
-      <div
+      {/* Sidebar for pin list */}
+      <aside
         style={{
           width: "300px",
-          padding: "10px",
+          padding: "1rem",
           background: "#f4f4f4",
           overflowY: "auto",
           height: "100vh",
@@ -126,9 +121,9 @@ const MapView = () => {
       >
         <h3>Saved Pins</h3>
 
-        {savedPins.length > 0 && (
+        {pins.length > 0 && (
           <button
-            onClick={handleClearAll}
+            onClick={handleClearPins}
             style={{
               background: "#d9534f",
               color: "white",
@@ -143,10 +138,10 @@ const MapView = () => {
           </button>
         )}
 
-        {savedPins.length === 0 && <p>No pins saved yet.</p>}
+        {pins.length === 0 && <p>No pins saved yet.</p>}
 
         <ul style={{ listStyle: "none", padding: 0 }}>
-          {savedPins.map((pin, index) => (
+          {pins.map((pin, index) => (
             <li
               key={index}
               style={{
@@ -154,38 +149,33 @@ const MapView = () => {
                 padding: "8px",
                 border: "1px solid #ccc",
                 borderRadius: "5px",
-                background: selectedPin === pin ? "#e0e0e0" : "#fff",
+                background: focusedPin === pin ? "#e0e0e0" : "#fff",
                 position: "relative",
               }}
             >
-              {editIndex === index ? (
+              {editModeIndex === index ? (
                 <div>
                   <textarea
-                    value={editRemark}
-                    onChange={(e) => setEditRemark(e.target.value)}
+                    value={editedRemark}
+                    onChange={(e) => setEditedRemark(e.target.value)}
                     rows={2}
                     style={{ width: "100%" }}
                   />
                   <button onClick={() => handleSaveEdit(index)}>Save</button>
-                  <button onClick={() => setEditIndex(null)}>Cancel</button>
+                  <button onClick={() => setEditModeIndex(null)}>Cancel</button>
                 </div>
               ) : (
-                <div
-                  onClick={() => setSelectedPin(pin)}
-                  style={{ cursor: "pointer" }}
-                >
+                <div onClick={() => setFocusedPin(pin)} style={{ cursor: "pointer" }}>
                   <strong>Remark:</strong>
                   <br />
                   {pin.remark || "No remark"}
                   <br />
-                  <small>
-                    <strong>Address:</strong> {pin.address || "Loading..."}
-                  </small>
+                  <small><strong>Address:</strong> {pin.address || "Fetching..."}</small>
                 </div>
               )}
 
               <button
-                onClick={() => handleDeletePin(index)}
+                onClick={() => handleDelete(index)}
                 style={{
                   position: "absolute",
                   top: "8px",
@@ -202,11 +192,11 @@ const MapView = () => {
                 ×
               </button>
 
-              {editIndex !== index && (
+              {editModeIndex !== index && (
                 <button
                   onClick={() => {
-                    setEditIndex(index);
-                    setEditRemark(pin.remark || "");
+                    setEditModeIndex(index);
+                    setEditedRemark(pin.remark || "");
                   }}
                   style={{
                     position: "absolute",
@@ -227,10 +217,10 @@ const MapView = () => {
             </li>
           ))}
         </ul>
-      </div>
+      </aside>
 
-      {/* Map */}
-      <div style={{ flex: 1 }}>
+      {/* Map View */}
+      <main style={{ flex: 1 }}>
         <MapContainer
           center={[20.5937, 78.9629]}
           zoom={5}
@@ -240,18 +230,17 @@ const MapView = () => {
             attribution='&copy; OpenStreetMap contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
+          <MapClickHandler onClick={handleMapClick} />
+          {focusedPin && <AnimateToPin pin={focusedPin} />}
 
-          <MapClickHandler onMapClick={handleMapClick} />
-          {selectedPin && <FlyToPin pin={selectedPin} />}
-
-          {newPin && (
-            <Marker position={[newPin.lat, newPin.lng]}>
+          {draftPin && (
+            <Marker position={[draftPin.lat, draftPin.lng]}>
               <Popup>
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSavePin}>
                   <textarea
-                    value={remark}
-                    onChange={(e) => setRemark(e.target.value)}
-                    placeholder="Enter remark..."
+                    value={remarkInput}
+                    onChange={(e) => setRemarkInput(e.target.value)}
+                    placeholder="Write a remark..."
                     rows={3}
                     style={{ width: "100%" }}
                   />
@@ -262,8 +251,8 @@ const MapView = () => {
             </Marker>
           )}
 
-          {savedPins.map((pin, index) => (
-            <Marker key={index} position={[pin.lat, pin.lng]}>
+          {pins.map((pin, idx) => (
+            <Marker key={idx} position={[pin.lat, pin.lng]}>
               <Popup>
                 <strong>Remark:</strong>
                 <br />
@@ -272,12 +261,12 @@ const MapView = () => {
                 <br />
                 <strong>Address:</strong>
                 <br />
-                {pin.address || "Loading..."}
+                {pin.address || "Fetching..."}
               </Popup>
             </Marker>
           ))}
         </MapContainer>
-      </div>
+      </main>
     </div>
   );
 };
