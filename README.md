@@ -61,8 +61,8 @@ This is used to avoid CORS issues when calling the Nominatim API.
 ```
 
 ## Acknowledgements
-Leaflet — Open-source JavaScript library for mobile-friendly maps.
+- Leaflet — Open-source JavaScript library for mobile-friendly maps.
 
-OpenStreetMap — Community-powered open map platform.
+- OpenStreetMap — Community-powered open map platform.
 
-Nominatim — Geocoding tool used for address lookup.
+- Nominatim — Geocoding tool used for address lookup.
