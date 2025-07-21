@@ -1,70 +1,66 @@
-# Getting Started with Create React App
+# 📍 Pin Drop Tool with Remarks
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+An interactive map-based tool where users can drop pins, add remarks, and fetch addresses for the pinned locations. All pins are saved and listed for easy navigation and persistent across sessions using local storage.
 
-## Available Scripts
 
-In the project directory, you can run:
 
-### `npm start`
+##  Features
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- 🗺️ **Interactive Map:** Click to drop a pin anywhere on the map.
+- 📝 **Remarks:** Add optional comments to each pin via a popup form.
+- 📍 **Reverse Geocoding:** Automatically fetch the address using the latitude and longitude (via OpenStreetMap's Nominatim API).
+- 💾 **Saved Pins Sidebar:** View a list of all saved pins with remarks and addresses.
+- 🧭 **Pin Navigation:** Click any pin from the sidebar to fly to its location on the map.
+- 🔁 **Persistence:** All pin data is saved in local storage and remains across sessions.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
 
-### `npm test`
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## 📦 Installation
 
-### `npm run build`
+**Clone the repository:**
+   ```bash
+   git clone https://github.com/Pratik7249/PinDrop.git
+   cd PinDrop
+   ```
+**Install dependencies:**
+```
+npm install react react-dom react-scripts leaflet react-leaflet
+npm install express node-fetch #for proxy-server.js
+``` 
+**Start the development server:**
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```
+npm start
+``` 
+**(Optional) Start the Proxy Server for Address Fetching:**
+```
+node proxy-server.js
+```
+This is used to avoid CORS issues when calling the Nominatim API.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Technologies Used
+- React
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+- Leaflet (for maps)
 
-### `npm run eject`
+- OpenStreetMap Nominatim API
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+- LocalStorage (for data persistence)
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Project Structure
+.
+├── public/
+├── src/
+│   ├── App.js
+│   ├── MapView.js
+│   └── ...
+├── proxy-server.js
+├── package.json
+└── README.md
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## Acknowledgements
+Leaflet — Open-source JavaScript library for mobile-friendly maps.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+OpenStreetMap — Community-powered open map platform.
 
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Nominatim — Geocoding tool used for address lookup.
